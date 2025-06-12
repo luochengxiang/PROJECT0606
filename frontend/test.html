@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对话管理测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .conversation-list {
+            margin-top: 10px;
+        }
+        .conversation-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .conversation-item.active {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 对话管理系统测试</h1>
+        
+        <div class="test-section">
+            <h3>基本操作</h3>
+            <button onclick="testCreateConversation()">创建新对话</button>
+            <button onclick="testAddMessage()">添加测试消息</button>
+            <button onclick="testRenameConversation()">重命名当前对话</button>
+            <button onclick="testDeleteConversation()">删除当前对话</button>
+            <button onclick="testClearAll()">清空所有对话</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>当前对话信息</h3>
+            <div id="current-conversation-info">
+                <p>当前对话ID: <span id="current-id">-</span></p>
+                <p>标题: <span id="current-title">-</span></p>
+                <p>消息数量: <span id="current-message-count">-</span></p>
+                <p>创建时间: <span id="current-created">-</span></p>
+                <p>更新时间: <span id="current-updated">-</span></p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>对话列表</h3>
+            <div id="conversation-list" class="conversation-list">
+                <!-- 对话列表将在这里显示 -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>操作日志</h3>
+            <div id="log" class="log"></div>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ConversationManager } from './src/utils/ConversationManager.js'
+        
+        let conversationManager = new ConversationManager()
+        let currentConversation = conversationManager.getCurrentConversation()
+        
+        // 全局函数
+        window.testCreateConversation = function() {
+            log('创建新对话...')
+            currentConversation = conversationManager.createNewConversation()
+            log(`新对话已创建: ${currentConversation.id}`)
+            updateDisplay()
+        }
+        
+        window.testAddMessage = function() {
+            if (!currentConversation) {
+                log('错误: 没有当前对话')
+                return
+            }
+            
+            const messages = [
+                '你好，我是用户',
+                '请解释一下机器学习',
+                '谢谢你的回答',
+                '再见'
+            ]
+            
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)]
+            const role = Math.random() > 0.5 ? 'user' : 'assistant'
+            
+            conversationManager.addMessage(role, randomMessage)
+            log(`添加消息: [${role}] ${randomMessage}`)
+            updateDisplay()
+        }
+        
+        window.testRenameConversation = function() {
+            if (!currentConversation) {
+                log('错误: 没有当前对话')
+                return
+            }
+            
+            const newTitle = prompt('请输入新标题:', currentConversation.title)
+            if (newTitle) {
+                conversationManager.renameConversation(currentConversation.id, newTitle)
+                currentConversation.title = newTitle
+                log(`对话已重命名为: ${newTitle}`)
+                updateDisplay()
+            }
+        }
+        
+        window.testDeleteConversation = function() {
+            if (!currentConversation) {
+                log('错误: 没有当前对话')
+                return
+            }
+            
+            const conversationId = currentConversation.id
+            conversationManager.deleteConversation(conversationId)
+            currentConversation = conversationManager.getCurrentConversation()
+            log(`对话已删除: ${conversationId}`)
+            updateDisplay()
+        }
+        
+        window.testClearAll = function() {
+            if (confirm('确定要清空所有对话吗？')) {
+                conversationManager.clearAllConversations()
+                currentConversation = conversationManager.getCurrentConversation()
+                log('所有对话已清空')
+                updateDisplay()
+            }
+        }
+        
+        window.switchToConversation = function(conversationId) {
+            const conversation = conversationManager.switchToConversation(conversationId)
+            if (conversation) {
+                currentConversation = conversation
+                log(`切换到对话: ${conversationId}`)
+                updateDisplay()
+            }
+        }
+        
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = ''
+        }
+        
+        function log(message) {
+            const logElement = document.getElementById('log')
+            const time = new Date().toLocaleTimeString()
+            logElement.innerHTML += `[${time}] ${message}\n`
+            logElement.scrollTop = logElement.scrollHeight
+        }
+        
+        function updateDisplay() {
+            // 更新当前对话信息
+            if (currentConversation) {
+                document.getElementById('current-id').textContent = currentConversation.id
+                document.getElementById('current-title').textContent = currentConversation.title
+                document.getElementById('current-message-count').textContent = currentConversation.messages.length
+                document.getElementById('current-created').textContent = currentConversation.createdAt.toLocaleString()
+                document.getElementById('current-updated').textContent = currentConversation.updatedAt.toLocaleString()
+            }
+            
+            // 更新对话列表
+            const grouped = conversationManager.getConversationsGrouped()
+            const listElement = document.getElementById('conversation-list')
+            listElement.innerHTML = ''
+            
+            function renderGroup(title, conversations) {
+                if (conversations.length === 0) return
+                
+                const groupDiv = document.createElement('div')
+                groupDiv.innerHTML = `<h4>${title}</h4>`
+                
+                conversations.forEach(conv => {
+                    const convDiv = document.createElement('div')
+                    convDiv.className = `conversation-item ${currentConversation?.id === conv.id ? 'active' : ''}`
+                    convDiv.innerHTML = `
+                        <strong>${conv.title}</strong><br>
+                        <small>消息: ${conv.messages.length} | 更新: ${conv.updatedAt.toLocaleString()}</small>
+                    `
+                    convDiv.onclick = () => switchToConversation(conv.id)
+                    groupDiv.appendChild(convDiv)
+                })
+                
+                listElement.appendChild(groupDiv)
+            }
+            
+            renderGroup('今天', grouped.today)
+            renderGroup('昨天', grouped.yesterday)
+            renderGroup('更早', grouped.older)
+        }
+        
+        // 初始化显示
+        updateDisplay()
+        log('对话管理系统测试页面已加载')
+    </script>
+</body>
+</html>

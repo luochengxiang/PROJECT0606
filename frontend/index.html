@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Gemini-Style AI Assistant - Next Gen Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <!-- 3D背景画布 -->
+    <canvas id="background-canvas"></canvas>
+
+    <!-- 粒子系统 -->
+    <div id="particles-container"></div>
+
+    <!-- 彩虹渐变背景 -->
+    <div class="rainbow-gradient"></div>
+
+    <!-- 主应用容器 -->
+    <div id="app" class="app-container">
+        <!-- 加载屏幕 -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-content">
+                <div class="gemini-logo">
+                    <div class="logo-sparkle"></div>
+                    <div class="logo-text">AI Assistant</div>
+                </div>
+                <div class="loading-progress">
+                    <div class="progress-bar"></div>
+                </div>
+                <div class="loading-text">正在初始化智能助手...</div>
+            </div>
+        </div>
+
+        <!-- 主界面 -->
+        <div id="main-interface" class="main-interface hidden">
+            <!-- 侧边栏 -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <button class="new-chat-btn" id="new-chat-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 5v14m-7-7h14"/>
+                        </svg>
+                        <span>新建对话</span>
+                    </button>
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M3 12h18m-9-9l9 9-9 9"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="chat-history">
+                    <div class="history-section">
+                        <h3 class="section-title">今天</h3>
+                        <div class="history-list" id="today-chats"></div>
+                    </div>
+                    <div class="history-section">
+                        <h3 class="section-title">昨天</h3>
+                        <div class="history-list" id="yesterday-chats"></div>
+                    </div>
+                    <div class="history-section">
+                        <h3 class="section-title">更早</h3>
+                        <div class="history-list" id="older-chats"></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button class="footer-btn" id="clear-all-btn" title="清空所有对话">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M3 6h18l-2 13H5L3 6zm5 0V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                            <path d="M10 11v6m4-6v6"/>
+                        </svg>
+                        <span>清空对话</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- 主内容区域 -->
+            <main class="main-content">
+                <!-- 顶部导航栏 -->
+                <header class="top-nav">
+                    <div class="nav-left">
+                        <button class="sidebar-toggle mobile-only" id="mobile-sidebar-toggle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <line x1="3" y1="12" x2="21" y2="12"/>
+                                <line x1="3" y1="18" x2="21" y2="18"/>
+                            </svg>
+                        </button>
+                        <div class="app-logo">
+                            <div class="logo-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <span class="logo-text">Gemini AI</span>
+                        </div>
+                    </div>
+                    <div class="nav-center">
+                        <div class="conversation-title">
+                            <span id="conversation-name">新对话</span>
+                            <button class="edit-title-btn" id="edit-title-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="nav-right">
+                        <button class="nav-btn" id="share-btn" title="分享对话">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                                <polyline points="16,6 12,2 8,6"/>
+                                <line x1="12" y1="2" x2="12" y2="15"/>
+                            </svg>
+                        </button>
+                        <button class="nav-btn" id="settings-btn" title="设置">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
+                            </svg>
+                        </button>
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span class="status-text">在线</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- 主聊天区域 -->
+                <div class="chat-main">
+                <!-- 欢迎屏幕 -->
+                <div id="welcome-screen" class="welcome-screen">
+                    <div class="welcome-content">
+                        <div class="welcome-header">
+                            <h1 class="welcome-title">
+                                <span class="gradient-text">Hello, I'm Gemini</span>
+                            </h1>
+                            <p class="welcome-subtitle">您的智能AI助手，基于AutoGen和DeepSeek技术</p>
+                        </div>
+
+                        <div class="suggestion-cards">
+                            <div class="suggestion-card" data-prompt="解释量子计算的基本原理">
+                                <div class="card-icon">🔬</div>
+                                <div class="card-title">解释概念</div>
+                                <div class="card-description">量子计算的基本原理</div>
+                            </div>
+                            <div class="suggestion-card" data-prompt="用Python写一个快速排序算法">
+                                <div class="card-icon">💻</div>
+                                <div class="card-title">编写代码</div>
+                                <div class="card-description">Python快速排序算法</div>
+                            </div>
+                            <div class="suggestion-card" data-prompt="分析当前AI技术发展趋势">
+                                <div class="card-icon">📊</div>
+                                <div class="card-title">数据分析</div>
+                                <div class="card-description">AI技术发展趋势</div>
+                            </div>
+                            <div class="suggestion-card" data-prompt="写一首关于科技的现代诗">
+                                <div class="card-icon">✨</div>
+                                <div class="card-title">创意写作</div>
+                                <div class="card-description">科技主题现代诗</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 聊天消息容器 -->
+                <div id="chat-messages" class="chat-messages hidden">
+                    <!-- 消息将通过TypeScript动态添加 -->
+                </div>
+
+                <!-- 思考指示器 -->
+                <div id="thinking-indicator" class="thinking-indicator hidden">
+                    <div class="thinking-content">
+                        <div class="thinking-avatar">
+                            <div class="avatar-sparkle"></div>
+                        </div>
+                        <div class="thinking-text">
+                            <div class="thinking-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="thinking-label">Gemini正在思考...</span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- 输入区域 -->
+                <footer class="input-section">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <div class="input-field">
+                            <textarea
+                                id="message-input"
+                                placeholder="输入消息给Gemini..."
+                                rows="1"
+                                maxlength="2000"
+                                autocomplete="off"
+                                spellcheck="false"
+                            ></textarea>
+                            <div class="input-actions">
+                                <button class="input-btn" id="attach-btn" title="附件">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                    </svg>
+                                </button>
+                                <button class="input-btn" id="voice-btn" title="语音输入">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                        <line x1="12" y1="19" x2="12" y2="23"/>
+                                        <line x1="8" y1="23" x2="16" y2="23"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button id="send-btn" class="send-btn" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-footer">
+                        <div class="footer-info">
+                            <span class="char-count">0/2000</span>
+                            <span class="model-info">Powered by AutoGen & DeepSeek</span>
+                        </div>
+                    </div>
+                </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- 通知系统 -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- 模态框容器 -->
+    <div id="modal-container" class="modal-container"></div>
+
+    <!-- 脚本 -->
+    <script type="module" src="src/main.ts"></script>
+</body>
+</html>
